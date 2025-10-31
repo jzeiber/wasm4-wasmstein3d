@@ -82,7 +82,7 @@ private:
 
 RoomTheme roomtheme[]={
 //                              Main Wall Texture (2)           Decorative Wall Texture (3)                 Secret Wall Texture (4)                                 Decorations (8)
-/* White Stone */               {{Tile_Wall01,Tile_Wall02},     {Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Wall02,Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Decoration_OverheadLamp,Tile_BlockingDecoration_Pillar,Tile_Empty},                                                               0.2},
+/* White Stone */               {{Tile_Wall01,Tile_Wall02},     {Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Wall02,Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Decoration_OverheadLamp,Tile_BlockingDecoration_Pillar,Tile_Empty},                                                               0.1},
 /* Dark Rectangular Blocks */   {{Tile_Wall08,Tile_Wall09},     {Tile_Wall05,Tile_Wall07,Tile_Empty},       {Tile_Wall08,Tile_Wall09,Tile_Empty},                   {Tile_Decoration_DeadGuard,Tile_Decoration_Skeleton,Tile_Decoration_OverheadLamp,Tile_BlockingDecoration_Barrel,Tile_Empty},            0.1},
 /* Wood Paneling */             {{Tile_Wall12,Tile_Empty},      {Tile_Wall10,Tile_Wall11,Tile_Empty},       {Tile_Wall10,Tile_Wall11,Tile_Empty},                   {Tile_Decoration_Chandelier,Tile_BlockingDecoration_SuitOfArmour,Tile_BlockingDecoration_Plant,Tile_BlockingDecoration_Vase,Tile_BlockingDecoration_FloorLamp,Tile_BlockingDecoration_TableChairs,Tile_BlockingDecoration_Table,Tile_Empty},     0.2}
 };
@@ -803,9 +803,9 @@ void generateRandomMap(uint8_t *mapdata, const int32_t seed, int8_t currentlevel
                 uint8_t tile=mapdata[(y*MAP_SIZE*2)+(x*2)];
                 if((tile>=Tile_FirstDoor && tile<=Tile_LastDoor) || tile==Tile_SecretPushWall)
                 {
-                    for(int32_t yy=y-1; yy<=y+1; yy++)
+                    for(int32_t yy=y-2; yy<=y+2; yy++)
                     {
-                        for(int32_t xx=x-1; xx<=x+1; xx++)
+                        for(int32_t xx=x-2; xx<=x+2; xx++)
                         {
                             uint8_t tile2=mapdata[(yy*MAP_SIZE*2)+(xx*2)];
                             if((xx!=x || yy!=y) && (tile2>=Tile_FirstBlockingDecoration && tile2<=Tile_LastBlockingDecoration))

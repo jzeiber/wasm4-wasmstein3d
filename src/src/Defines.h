@@ -1,7 +1,7 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
-#define VERSION_STR "0.1.0"
+#define VERSION_STR "0.1.1"
 
 #define USE_SIMPLE_COLLISIONS
 
@@ -126,8 +126,8 @@ using uint24_t = __uint24;
 #define DOOR_LOCKED1_TEXTURE 24
 #define DOOR_LOCKED2_TEXTURE 25
 
-#define MAX_ACTIVE_ACTORS 8
-#define MAX_ACTIVE_ITEMS 6
+#define MAX_ACTIVE_ACTORS 24
+#define MAX_ACTIVE_ITEMS 12
 
 #define EMPTY_ITEM_SLOT 0xff
 #define DYNAMIC_ITEM_ID 0xfe
