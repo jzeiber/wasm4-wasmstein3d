@@ -1,7 +1,7 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
-#define VERSION_STR "0.1.1"
+#define VERSION_STR "0.1.2"
 
 #define USE_SIMPLE_COLLISIONS
 

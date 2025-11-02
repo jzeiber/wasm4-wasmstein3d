@@ -13,13 +13,33 @@ enum Dir
     DIR_WEST=4
 };
 
+enum DecorationPlacementFlags
+{
+    DECORATION_PLACE_CORNER=            0b00000001,
+    DECORATION_PLACE_ADJACENT_WALL=     0b00000010,
+    DECORATION_PLACE_AWAY_WALL=         0b00000100,
+    DECORATION_PLACE_AWAY_DOOR=         0b00001000,
+    DECORATION_PLACE_ISOLATED=          0b00010000,
+    DECORATION_PLACE_GRID=              0b00100000,
+    DECORATION_PLACE_DIAGONAL=          0b01000000
+};
+
+struct Decoration
+{
+    uint8_t tile;
+    uint8_t flags;
+    uint8_t val;
+    float chance;
+};
+
 struct RoomTheme
 {
 	uint8_t mainwall[2];
 	uint8_t decorativewall[3];
 	uint8_t secretwall[4];		// which walls can have secret behind (may be same as above)
-	uint8_t roomdecoration[8];
-    float decorationmult;
+	//uint8_t roomdecoration[8];
+    Decoration roomdecoration[8];
+    //float decorationmult;
 
     int32_t MainWallCount() const
     {
@@ -38,7 +58,15 @@ struct RoomTheme
 
     int32_t DecorationCount() const
     {
-        return Count(roomdecoration,countof(roomdecoration));
+        for(int32_t i=0; i<countof(roomdecoration); i++)
+        {
+            if(roomdecoration[i].tile==Tile_Empty)
+            {
+                return i;
+            }
+        }
+        return countof(roomdecoration);
+        //return Count(roomdecoration,countof(roomdecoration));
     }
 
 private:
@@ -80,11 +108,31 @@ private:
 	Tile_LastDecoration = Tile_Decoration_Chandelier,
 */
 
+// RoomTheme roomtheme[]={
+// //                              Main Wall Texture (2)           Decorative Wall Texture (3)                 Secret Wall Texture (4)                                 Decorations (8)
+// /* White Stone */               {{Tile_Wall01,Tile_Wall02},     {Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Wall02,Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Decoration_OverheadLamp,Tile_BlockingDecoration_Pillar,Tile_Empty},                                                               0.1},
+// /* Dark Rectangular Blocks */   {{Tile_Wall08,Tile_Wall09},     {Tile_Wall05,Tile_Wall07,Tile_Empty},       {Tile_Wall08,Tile_Wall09,Tile_Empty},                   {Tile_Decoration_DeadGuard,Tile_Decoration_Skeleton,Tile_Decoration_OverheadLamp,Tile_BlockingDecoration_Barrel,Tile_Empty},            0.1},
+// /* Wood Paneling */             {{Tile_Wall12,Tile_Empty},      {Tile_Wall10,Tile_Wall11,Tile_Empty},       {Tile_Wall10,Tile_Wall11,Tile_Empty},                   {Tile_Decoration_Chandelier,Tile_BlockingDecoration_SuitOfArmour,Tile_BlockingDecoration_Plant,Tile_BlockingDecoration_Vase,Tile_BlockingDecoration_FloorLamp,Tile_BlockingDecoration_TableChairs,Tile_BlockingDecoration_Table,Tile_Empty},     0.2}
+// };
+
 RoomTheme roomtheme[]={
-//                              Main Wall Texture (2)           Decorative Wall Texture (3)                 Secret Wall Texture (4)                                 Decorations (8)
-/* White Stone */               {{Tile_Wall01,Tile_Wall02},     {Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Wall02,Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Decoration_OverheadLamp,Tile_BlockingDecoration_Pillar,Tile_Empty},                                                               0.1},
-/* Dark Rectangular Blocks */   {{Tile_Wall08,Tile_Wall09},     {Tile_Wall05,Tile_Wall07,Tile_Empty},       {Tile_Wall08,Tile_Wall09,Tile_Empty},                   {Tile_Decoration_DeadGuard,Tile_Decoration_Skeleton,Tile_Decoration_OverheadLamp,Tile_BlockingDecoration_Barrel,Tile_Empty},            0.1},
-/* Wood Paneling */             {{Tile_Wall12,Tile_Empty},      {Tile_Wall10,Tile_Wall11,Tile_Empty},       {Tile_Wall10,Tile_Wall11,Tile_Empty},                   {Tile_Decoration_Chandelier,Tile_BlockingDecoration_SuitOfArmour,Tile_BlockingDecoration_Plant,Tile_BlockingDecoration_Vase,Tile_BlockingDecoration_FloorLamp,Tile_BlockingDecoration_TableChairs,Tile_BlockingDecoration_Table,Tile_Empty},     0.2}
+//                              Main Wall Texture (2)           Decorative Wall Texture (3)                 Secret Wall Texture (4)                                 Decorations (8) (Tile,Flags,Value,Chance)
+/* White Stone */               {{Tile_Wall01,Tile_Wall02},     {Tile_Wall03,Tile_Wall04,Tile_Wall06},      {Tile_Wall02,Tile_Wall03,Tile_Wall04,Tile_Wall06},      {{Tile_Decoration_OverheadLamp,DECORATION_PLACE_AWAY_WALL|DECORATION_PLACE_GRID,3,1.0},
+                                                                                                                                                                        {Tile_BlockingDecoration_Pillar,DECORATION_PLACE_CORNER|DECORATION_PLACE_AWAY_DOOR,0,1.0},
+                                                                                                                                                                        {Tile_Empty,0,0,0}}},
+/* Dark Rectangular Blocks */   {{Tile_Wall08,Tile_Wall09},     {Tile_Wall05,Tile_Wall07,Tile_Empty},       {Tile_Wall08,Tile_Wall09,Tile_Empty},                   {{Tile_Decoration_DeadGuard,DECORATION_PLACE_ISOLATED,0,0.02},
+                                                                                                                                                                        {Tile_Decoration_Skeleton,DECORATION_PLACE_ISOLATED,0,0.02},
+                                                                                                                                                                        {Tile_Decoration_OverheadLamp,DECORATION_PLACE_AWAY_WALL|DECORATION_PLACE_GRID,3,1.0},
+                                                                                                                                                                        {Tile_BlockingDecoration_Barrel,DECORATION_PLACE_ADJACENT_WALL|DECORATION_PLACE_AWAY_DOOR,0,0.1},
+                                                                                                                                                                        {Tile_Empty,0,0}}},
+/* Wood Paneling */             {{Tile_Wall12,Tile_Empty},      {Tile_Wall10,Tile_Wall11,Tile_Empty},       {Tile_Wall10,Tile_Wall11,Tile_Empty},                   {{Tile_Decoration_Chandelier,DECORATION_PLACE_AWAY_WALL|DECORATION_PLACE_GRID,3,1.0},
+                                                                                                                                                                        {Tile_BlockingDecoration_SuitOfArmour,DECORATION_PLACE_ADJACENT_WALL|DECORATION_PLACE_AWAY_DOOR,0,0.1},
+                                                                                                                                                                        {Tile_BlockingDecoration_Plant,DECORATION_PLACE_ADJACENT_WALL|DECORATION_PLACE_AWAY_DOOR,0,0.2},
+                                                                                                                                                                        {Tile_BlockingDecoration_Vase,DECORATION_PLACE_ADJACENT_WALL|DECORATION_PLACE_AWAY_DOOR,0,0.2},
+                                                                                                                                                                        {Tile_BlockingDecoration_FloorLamp,DECORATION_PLACE_ADJACENT_WALL|DECORATION_PLACE_AWAY_DOOR,0,0.2},
+                                                                                                                                                                        {Tile_BlockingDecoration_TableChairs,DECORATION_PLACE_AWAY_WALL,0,0.1},
+                                                                                                                                                                        {Tile_BlockingDecoration_Table,DECORATION_PLACE_AWAY_WALL,0,0.1},
+                                                                                                                                                                        {Tile_Empty,0,0}}}
 };
 
 enum BuildFlags
@@ -230,6 +278,101 @@ void placeEnemies(uint8_t *mapdata, RandomMT &rnd, int32_t x1, int32_t y1, int32
 
 void placeDecorations(uint8_t *mapdata, RandomMT &rnd, const RoomTheme &theme, int32_t x1, int32_t y1, int32_t x2, int32_t y2)
 {
+    uint8_t wallcount=0;
+    uint8_t doorcount=0;
+    uint8_t blockingcount=0;
+    uint8_t nonblockingcount=0;
+
+    for(int32_t y=y1; y<=y2; y++)
+    {
+        for(int32_t x=x1; x<=x2; x++)
+        {
+            int32_t tries=2+(rnd.Next()%3);
+            while(--tries>0)
+            {
+                if(mapdata[(y*MAP_SIZE*2)+(x*2)]==Tile_Empty)
+                {
+                    wallcount=0;
+                    doorcount=0;
+                    blockingcount=0;
+                    nonblockingcount=0;
+                    for(int32_t yy=y-1; yy<=y+1; yy++)
+                    {
+                        for(int32_t xx=x-1; xx<=x+1; xx++)
+                        {
+                            const uint8_t tile=mapdata[(yy*MAP_SIZE*2)+(xx*2)];
+                            if(tile>=Tile_FirstWall && tile<=Tile_LastWall)
+                            {
+                                wallcount++;
+                            }
+                            if((tile>=Tile_FirstDoor && tile<=Tile_LastDoor) || (tile==Tile_SecretPushWall))
+                            {
+                                doorcount++;
+                            }
+                            if(tile>=Tile_FirstBlockingDecoration && tile<=Tile_LastBlockingDecoration)
+                            {
+                                blockingcount++;
+                            }
+                            if(tile>=Tile_FirstDecoration && tile<=Tile_LastDecoration)
+                            {
+                                nonblockingcount++;
+                            }
+                        }
+                    }
+
+                    uint8_t dec=rnd.Next()%theme.DecorationCount();
+
+                    bool placeok=true;
+
+                    // can't place blocking decoration next to another blocking decoration
+                    if(theme.roomdecoration[dec].tile>=Tile_FirstBlockingDecoration && theme.roomdecoration[dec].tile<=Tile_LastBlockingDecoration && blockingcount>0)
+                    {
+                        placeok=false;
+                    }
+                    if((theme.roomdecoration[dec].flags & DECORATION_PLACE_CORNER) && wallcount<5)
+                    {
+                        placeok=false;
+                    }
+                    if((theme.roomdecoration[dec].flags & DECORATION_PLACE_ADJACENT_WALL) && wallcount<3)
+                    {
+                        placeok=false;
+                    }
+                    if((theme.roomdecoration[dec].flags & DECORATION_PLACE_AWAY_WALL) && wallcount>0)
+                    {
+                        placeok=false;
+                    }
+                    if((theme.roomdecoration[dec].flags & DECORATION_PLACE_AWAY_DOOR) && doorcount>0)
+                    {
+                        placeok=false;
+                    }
+                    if((theme.roomdecoration[dec].flags & DECORATION_PLACE_GRID) && (x%theme.roomdecoration[dec].val!=0 || y%theme.roomdecoration[dec].val!=0))
+                    {
+                        placeok=false;
+                    }
+                    if((theme.roomdecoration[dec].flags & DECORATION_PLACE_DIAGONAL) && (x%theme.roomdecoration[dec].val!=0 || (y+1)%theme.roomdecoration[dec].val!=0))
+                    {
+                        placeok=false;
+                    }
+                    if((theme.roomdecoration[dec].flags & DECORATION_PLACE_ISOLATED) && (blockingcount>0 || nonblockingcount>0))
+                    {
+                        placeok=false;
+                    }
+                    if(rnd.NextDouble()>theme.roomdecoration[dec].chance)
+                    {
+                        placeok=false;
+                    }
+
+                    if(placeok==true)
+                    {
+                        setMapTile(mapdata,x,y,theme.roomdecoration[dec].tile,0);
+                    }
+
+                }
+            }
+        }
+    }
+
+    /*
     int32_t tries=((y2-y1)*(x2-x1))*theme.decorationmult;
     for(int32_t i=0; i<tries; i++)
     {
@@ -269,6 +412,7 @@ void placeDecorations(uint8_t *mapdata, RandomMT &rnd, const RoomTheme &theme, i
             setMapTile(mapdata,x,y,type,0);
         }
     }
+    */
 }
 
 bool tryPlaceRoom(uint8_t *mapdata, RandomMT &rnd, BuildPosition &pos, uint8_t &buildflags, int32_t &doorcount, BuildPosition *nodes, int32_t &nodecount, const int32_t maxnodes)
@@ -331,7 +475,8 @@ bool tryPlaceRoom(uint8_t *mapdata, RandomMT &rnd, BuildPosition &pos, uint8_t &
             uint8_t door2metadata=0;
             uint8_t doortype=(pos.dir==DIR_NORTH || pos.dir==DIR_SOUTH) ? Tile_Door_Generic_Horizontal : Tile_Door_Generic_Vertical;
 
-            if(pos.theme==pos.prevroomtheme && rnd.NextDouble()>0.5)
+            // check start room distance so starting room should always have doors to adjacent rooms
+            if(pos.theme==pos.prevroomtheme && pos.startdistance>1 && rnd.NextDouble()>0.5)
             {
                 expandthis=true;
                 expandprev=true;

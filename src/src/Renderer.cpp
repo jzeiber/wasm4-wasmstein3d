@@ -17,6 +17,8 @@
 #include "Generated/Data_UI.h"
 
 #include "cppfuncs.h"
+#include "wasm4.h"
+#include "palette.h"
 
 void Renderer::init()
 {
@@ -27,6 +29,9 @@ void Renderer::drawDamage()
 	if(damageIndicator > 0)
 	{
 		damageIndicator --;
+		*DRAW_COLORS=(PALETTE_WHITE << 4);
+		rect(0,0,DISPLAYWIDTH,DISPLAYHEIGHT);
+		/*
 		for(int x = 0; x < DISPLAYWIDTH; x++)
 		{
 			setPixel(x, 0);
@@ -37,10 +42,14 @@ void Renderer::drawDamage()
 			setPixel(0, y);
 			setPixel(DISPLAYWIDTH - 1, y);
 		}
+		*/
 	}
 	else if (damageIndicator < 0)
 	{
 		damageIndicator++;
+		*DRAW_COLORS=(PALETTE_BLACK << 4);
+		rect(0,0,DISPLAYWIDTH,DISPLAYHEIGHT);
+		/*
 		for (int x = 0; x < DISPLAYWIDTH; x++)
 		{
 			clearPixel(x, 0);
@@ -51,6 +60,7 @@ void Renderer::drawDamage()
 			clearPixel(0, y);
 			clearPixel(DISPLAYWIDTH - 1, y);
 		}
+		*/
 	}
 }
 
@@ -246,7 +256,7 @@ void Renderer::drawFrame()
 
 	drawHUD();
 
-	//debug - draw Map
+	// Draw Map
 	const int32_t mapoffsetx=(DISPLAYWIDTH-MAP_SIZE)/2;
 	*DRAW_COLORS=(PALETTE_DARKGREY << 4) | PALETTE_DARKGREY;
 	rect(mapoffsetx,DISPLAYHEIGHT,MAP_SIZE,MAP_SIZE);
@@ -297,7 +307,7 @@ void Renderer::drawFrame()
 
 					if(engine.frameCount%6>2)
 					{
-						for(int i=0; i<8; i++)
+						for(int i=0; i<countof(engine.actors); i++)
 						{
 							if(engine.actors[i].type!=ActorType_Empty && engine.actors[i].state!=ActorState_Dead && (engine.actors[i].x/CELL_SIZE)==x && (engine.actors[i].z/CELL_SIZE)==y)
 							{
@@ -326,14 +336,10 @@ void Renderer::drawFrame()
 		drawGlyph('E'-FIRST_FONT_GLYPH,centerx+12,centery-2,PALETTE_LIGHTGREY);
 
 		*DRAW_COLORS=PALETTE_LIGHTGREY;
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_360)*8),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_360)*8),centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_360)*10),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_360)*10));
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(degrees45)*8),centery+FIXED_TO_INT(FixedMath::Sin(degrees45)*8),centerx+FIXED_TO_INT(FixedMath::Cos(degrees45)*10),centery+FIXED_TO_INT(FixedMath::Sin(degrees45)*10));
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_90)*8),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_90)*8),centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_90)*10),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_90)*10));
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_90+degrees45)*8),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_90+degrees45)*8),centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_90+degrees45)*10),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_90+degrees45)*10));
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_180)*8),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_180)*8),centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_180)*10),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_180)*10));
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_180+degrees45)*8),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_180+degrees45)*8),centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_180+degrees45)*10),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_180+degrees45)*10));
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_270)*8),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_270)*8),centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_270)*10),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_270)*10));
-		line(centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_270+degrees45)*8),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_270+degrees45)*8),centerx+FIXED_TO_INT(FixedMath::Cos(DEGREES_270+degrees45)*10),centery+FIXED_TO_INT(FixedMath::Sin(DEGREES_270+degrees45)*10));
+		for(int deg=0; deg<256; deg+=(DEGREES_90/2))
+		{
+			line(centerx+FIXED_TO_INT(FixedMath::Cos(deg)*8),centery+FIXED_TO_INT(FixedMath::Sin(deg)*8),centerx+FIXED_TO_INT(FixedMath::Cos(deg)*10),centery+FIXED_TO_INT(FixedMath::Sin(deg)*10));
+		}
 
 		*DRAW_COLORS=PALETTE_WHITE;
 		line(centerx,centery,centerx+FIXED_TO_INT(FixedMath::Cos(engine.player.direction)*8),centery+FIXED_TO_INT(FixedMath::Sin(engine.player.direction)*8));
@@ -536,135 +542,12 @@ void Renderer::drawFloorAndCeiling()
 #else
 void Renderer::drawFloorAndCeiling()
 {
-#ifdef _WIN32
-	for(int x = 0; x < DISPLAYWIDTH; x++)
-	{
-		for(int y = 0; y < DISPLAYHEIGHT; y++)
-		{
-#if defined(EMULATE_UZEBOX)
-			if(y < HALF_DISPLAYHEIGHT || ((x & y) & 1) == 0)
-			{
-				drawPixel(x, y, 3);
-			}
-			else
-			{
-				drawPixel(x, y, 2);
-			}
-#elif 1
-			if (y < HALF_DISPLAYHEIGHT)
-			{
-				if ((x & 1))
-				{
-					if (((x >> 1) & 1) == (y & 1))
-					{
-						setPixel(x, y);
-					}
-					else
-					{
-						clearPixel(x, y);
-					}
-				}
-				else
-				{
-					setPixel(x, y);
-				}
-			}
-			else
-			{
-				if (!(x & 1))
-				{
-					if (((x >> 1) & 1) == (y & 1))
-					{
-						clearPixel(x, y);
-					}
-					else
-					{
-						setPixel(x, y);
-					}
-				}
-				else
-				{
-					clearPixel(x, y);
-				}
-				//clearPixel(x, y);
-			}
-#else
-			if(y < HALF_DISPLAYHEIGHT || ((x ^ y) & 1) == 1)
-			{
-				setPixel(x, y);
-			}
-			else
-			{
-				clearPixel(x, y);
-			}
-#endif
-		}
-	}
-#elif 1
-	// uint8_t* ptr = GetScreenBuffer();
-
-	// uint8_t counter = 128;
-	
-	// while (counter--)
-	// {
-	// 	*ptr++ = 0x55; *ptr++ = 0x00; *ptr++ = 0xaa; *ptr++ = 0x00;
-	// }
-
-	// counter = 128;
-	// while (counter--)
-	// {
-	// 	*ptr++ = 0x55; *ptr++ = 0xff; *ptr++ = 0xaa; *ptr++ = 0xff;
-	// }
-	for(int x = 0; x < DISPLAYWIDTH; x++)
-	{
-		for(int y = 0; y < DISPLAYHEIGHT; y++)
-		{
-			if (y < HALF_DISPLAYHEIGHT)
-			{
-				if ((x & 1))
-				{
-					if (((x >> 1) & 1) == (y & 1))
-					{
-						setPixel(x, y);
-					}
-					else
-					{
-						clearPixel(x, y);
-					}
-				}
-				else
-				{
-					setPixel(x, y);
-				}
-			}
-			else
-			{
-				if (!(x & 1))
-				{
-					if (((x >> 1) & 1) == (y & 1))
-					{
-						clearPixel(x, y);
-					}
-					else
-					{
-						setPixel(x, y);
-					}
-				}
-				else
-				{
-					clearPixel(x, y);
-				}
-				//clearPixel(x, y);
-			}
-		}
-	}
-#endif
-const uint16_t savecolors=*DRAW_COLORS;
-*DRAW_COLORS=PALETTE_DARKGREY << 4 |  PALETTE_DARKGREY;
-rect(0,0,DISPLAYWIDTH,DISPLAYHEIGHT/2);
-*DRAW_COLORS=PALETTE_LIGHTGREY << 4 | PALETTE_LIGHTGREY;
-rect(0,DISPLAYHEIGHT/2,DISPLAYWIDTH,DISPLAYHEIGHT/2);
-*DRAW_COLORS=savecolors;
+	const uint16_t savecolors=*DRAW_COLORS;
+	*DRAW_COLORS=PALETTE_DARKGREY << 4 |  PALETTE_DARKGREY;
+	rect(0,0,DISPLAYWIDTH,DISPLAYHEIGHT/2);
+	*DRAW_COLORS=PALETTE_LIGHTGREY << 4 | PALETTE_LIGHTGREY;
+	rect(0,DISPLAYHEIGHT/2,DISPLAYWIDTH,DISPLAYHEIGHT/2);
+	*DRAW_COLORS=savecolors;
 }
 #endif
 
@@ -898,6 +781,11 @@ bool renderingVerticalWall = false;
 	{
 		if(y >= 0 && y < DISPLAYHEIGHT)
 		{
+			constexpr uint8_t pidx[4]={PALETTE_LIGHTGREY,PALETTE_WHITE,PALETTE_BLACK,PALETTE_DARKGREY};
+			*DRAW_COLORS=pidx[texData];
+			line(x,y,x,y);
+
+			/*
 			switch(texData)
 			{
 			case 0:
@@ -913,6 +801,7 @@ bool renderingVerticalWall = false;
 				drawPixel(x,y,PALETTE_DARKGREY);
 				break;
 			}
+			*/
 
 			// if (renderingVerticalWall)
 			// {
@@ -1549,6 +1438,10 @@ void Renderer::drawQueuedSprite(uint8_t id)
 					}
 					else
 					{
+						constexpr uint8_t pidx[4]={0,PALETTE_WHITE,PALETTE_BLACK,PALETTE_DARKGREY};
+						*DRAW_COLORS=pidx[texData];
+						line(x,y,x,y);
+						/*
 						switch(texData)
 						{
 						case 0:
@@ -1564,6 +1457,8 @@ void Renderer::drawQueuedSprite(uint8_t id)
 							drawPixel(x,y,PALETTE_DARKGREY);
 							break;
 						}
+						*/
+
 // 						switch (texData)
 // 						{
 // 						case 0:
@@ -1664,7 +1559,7 @@ void Renderer::drawString(const char* str, uint8_t x, uint8_t y, uint8_t colour)
 {
 	char* ptr = (char*) str;
 	char current = 0;
-	uint8_t startX = x;
+	const uint8_t startX = x;
 
 	do
 	{
@@ -1782,6 +1677,9 @@ void Renderer::drawBackground(uint8_t *data, const int32_t offsety)
 		{
 			for(int j=0; j<8; j++)
 			{
+				*DRAW_COLORS=(data[index] & (1 << j)) ? PALETTE_WHITE : PALETTE_BLACK;
+				line(x,offsety+y+j,x,offsety+y+j);
+				/*
 				if(data[index] & (1 << j))
 				{
 					drawPixel(x,offsety+y+j,PALETTE_WHITE);
@@ -1790,6 +1688,7 @@ void Renderer::drawBackground(uint8_t *data, const int32_t offsety)
 				{
 					drawPixel(x,offsety+y+j,PALETTE_BLACK);
 				}
+				*/
 			}
 			index++;
 		}
